@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";
@@ -7,9 +8,10 @@ import registerValidation from "./validations/users.js";
 import UserModel from "./models/users.js";
 
 export const app = express();
+app.use(cors());
 app.use(express.json());
 
-app.post("/users/register", registerValidation, async (req, res) => {
+app.post("/api/users/register", registerValidation, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -49,6 +51,49 @@ app.post("/users/register", registerValidation, async (req, res) => {
     console.log(error);
     res.status(500).json({
       massage: "Не вдалося зареєструватися",
+    });
+  }
+});
+
+app.post("/api/users/login", async (req, res) => {
+  try {
+    const user = await UserModel.findOne({ email: req.body.email });
+
+    if (!user) {
+      return res.status(400).json({
+        massage: " Користувач не знайдений",
+      });
+    }
+
+    const isValidPass = await bcrypt.compare(
+      req.body.password,
+      user._doc.password
+    );
+    if (!isValidPass) {
+      return res.status(404).json({
+        massage: "Невірний логін або пароль",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        _id: user._id,
+      },
+      "secret123",
+      {
+        expiresIn: "30d",
+      }
+    );
+
+    const { password, ...userData } = user._doc;
+
+    res.json({
+      ...userData,
+      token,
+    });
+  } catch (error) {
+    res.status(500).json({
+      massage: "Не вдалося авторизуватися",
     });
   }
 });
