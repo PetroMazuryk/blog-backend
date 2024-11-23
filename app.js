@@ -1,4 +1,5 @@
 import express from "express";
+import morgan from "morgan";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -6,8 +7,10 @@ import "dotenv/config";
 import { validationResult } from "express-validator";
 import registerValidation from "./validations/users.js";
 import UserModel from "./models/users.js";
+import checkAuth from "./utils/checkAuth.js";
 
 export const app = express();
+app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
 
@@ -94,6 +97,28 @@ app.post("/api/users/login", async (req, res) => {
   } catch (error) {
     res.status(500).json({
       massage: "Не вдалося авторизуватися",
+    });
+  }
+});
+
+app.get("/api/users/current", checkAuth, async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        massage: " Користувач не знайдений",
+      });
+    }
+
+    const { password, ...userData } = user._doc;
+
+    res.status(200).json({
+      ...userData,
+    });
+  } catch (error) {
+    res.status(500).json({
+      massage: "Немає доступу",
     });
   }
 });
