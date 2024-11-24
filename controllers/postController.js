@@ -18,3 +18,16 @@ export const createPost = async (req, res) => {
     });
   }
 };
+
+export const getAllPosts = async (req, res) => {
+  try {
+    const posts = await PostModel.find().populate("user").exec();
+
+    res.json(posts);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      massage: "Не вдалося отримати статті",
+    });
+  }
+};

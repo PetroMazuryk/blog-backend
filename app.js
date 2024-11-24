@@ -31,3 +31,5 @@ app.post(
   postCreateValidation,
   postController.createPost
 );
+
+app.get("/api/posts", postController.getAllPosts);
