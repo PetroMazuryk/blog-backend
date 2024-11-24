@@ -33,3 +33,5 @@ app.post(
 );
 
 app.get("/api/posts", postController.getAllPosts);
+
+app.get("/api/posts/:id", postController.getOnePost);

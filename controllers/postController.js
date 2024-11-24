@@ -31,3 +31,28 @@ export const getAllPosts = async (req, res) => {
     });
   }
 };
+
+export const getOnePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    const post = await PostModel.findOneAndUpdate(
+      { _id: postId },
+      { $inc: { viewsCount: 1 } },
+      { new: true }
+    );
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Стаття не знайдена",
+      });
+    }
+
+    res.status(200).json(post);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Не вдалося отримати статтю",
+    });
+  }
+};
