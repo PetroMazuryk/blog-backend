@@ -56,3 +56,26 @@ export const getOnePost = async (req, res) => {
     });
   }
 };
+
+export const deletePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    const post = await PostModel.findOneAndDelete({ _id: postId });
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Стаття не знайдена",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Не вдалося видалити статтю",
+    });
+  }
+};
