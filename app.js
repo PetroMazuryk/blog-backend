@@ -37,3 +37,5 @@ app.get("/api/posts", postController.getAllPosts);
 app.get("/api/posts/:id", postController.getOnePost);
 
 app.delete("/api/posts/:id", checkAuth, postController.deletePost);
+
+app.patch("/api/posts/:id", checkAuth, postController.updatePost);

@@ -79,3 +79,37 @@ export const deletePost = async (req, res) => {
     });
   }
 };
+
+export const updatePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    const post = await PostModel.findOneAndUpdate(
+      { _id: postId },
+      {
+        title: req.body.title,
+        text: req.body.text,
+        imageUrl: req.body.imageUrl,
+        tags: req.body.tags,
+        user: req.userId,
+      },
+      { new: true }
+    );
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Стаття не знайдена",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      post,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Не вдалося оновити статтю",
+    });
+  }
+};
