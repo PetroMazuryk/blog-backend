@@ -1,7 +1,6 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import multer from "multer";
 import "dotenv/config";
 
 import {
@@ -9,9 +8,9 @@ import {
   loginValidation,
   postCreateValidation,
 } from "./validations.js";
-import checkAuth from "./utils/checkAuth.js";
-import * as userController from "./controllers/userController.js";
-import * as postController from "./controllers/postController.js";
+import { checkAuth, handleValidationErrors } from "./utils/index.js";
+import { userController, postController } from "./controllers/index.js";
+import { upload } from "./middlewares/upload.js";
 
 export const app = express();
 app.use(morgan("tiny"));
@@ -19,30 +18,20 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
-const storage = multer.diskStorage({
-  destination: (_, res, cb) => {
-    cb(null, "uploads");
-  },
-  filename: (_, file, cb) => {
-    cb(null, file.originalname);
-  },
-});
-
-const upload = multer({
-  storage,
-  fileFilter: (_, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Тільки зображення дозволені"), false);
-    }
-  },
-});
-
 // user
-app.post("/api/users/register", registerValidation, userController.register);
+app.post(
+  "/api/users/register",
+  registerValidation,
+  handleValidationErrors,
+  userController.register
+);
 
-app.post("/api/users/login", loginValidation, userController.login);
+app.post(
+  "/api/users/login",
+  loginValidation,
+  handleValidationErrors,
+  userController.login
+);
 
 app.get("/api/users/current", checkAuth, userController.current);
 
