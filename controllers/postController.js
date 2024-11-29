@@ -113,3 +113,19 @@ export const updatePost = async (req, res) => {
     });
   }
 };
+
+export const getLastTags = async (req, res) => {
+  try {
+    const posts = await PostModel.find().limit(5).exec();
+    const tags = posts
+      .map((item) => item.tags)
+      .flat()
+      .slice(0, 5);
+    res.json(tags);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      massage: "Не вдалося отримати теги",
+    });
+  }
+};

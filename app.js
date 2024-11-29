@@ -39,6 +39,8 @@ app.get("/api/users/current", checkAuth, userController.current);
 
 app.get("/api/posts", postController.getAllPosts);
 
+app.get("/api/tags", postController.getLastTags);
+
 app.get("/api/posts/:id", postController.getOnePost);
 
 app.post(
