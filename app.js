@@ -35,6 +35,8 @@ app.post(
 
 app.get("/api/users/current", checkAuth, userController.current);
 
+app.post("/api/users/logout", checkAuth, userController.logout);
+
 // post
 
 app.get("/api/posts", postController.getAllPosts);

@@ -111,3 +111,16 @@ export const current = async (req, res) => {
     });
   }
 };
+
+export const logout = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    await UserModel.findByIdAndUpdate(userId, { token: "" });
+
+    res.json({ message: "Logout success" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Не вдалося виконати logout" });
+  }
+};
