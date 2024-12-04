@@ -1,3 +1,9 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 import PostModel from "../models/post.js";
 
 export const createPost = async (req, res) => {
@@ -6,7 +12,7 @@ export const createPost = async (req, res) => {
       title: req.body.title,
       text: req.body.text,
       imageUrl: req.body.imageUrl,
-      tags: req.body.tags,
+      tags: req.body.tags.split(","),
       user: req.userId,
     });
     const post = await doc.save();
@@ -40,7 +46,7 @@ export const getOnePost = async (req, res) => {
       { _id: postId },
       { $inc: { viewsCount: 1 } },
       { new: true }
-    );
+    ).populate("user");
 
     if (!post) {
       return res.status(404).json({
@@ -57,11 +63,35 @@ export const getOnePost = async (req, res) => {
   }
 };
 
+// export const deletePost = async (req, res) => {
+//   try {
+//     const postId = req.params.id;
+
+//     const post = await PostModel.findOneAndDelete({ _id: postId });
+
+//     if (!post) {
+//       return res.status(404).json({
+//         message: "Стаття не знайдена",
+//       });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       message: "Не вдалося видалити статтю",
+//     });
+//   }
+// };
+
 export const deletePost = async (req, res) => {
   try {
     const postId = req.params.id;
 
-    const post = await PostModel.findOneAndDelete({ _id: postId });
+    // Знаходимо пост перед видаленням
+    const post = await PostModel.findById(postId);
 
     if (!post) {
       return res.status(404).json({
@@ -69,17 +99,37 @@ export const deletePost = async (req, res) => {
       });
     }
 
+    // Видаляємо файл зображення, якщо він існує
+    if (post.imageUrl) {
+      const imagePath = path.join(
+        __dirname,
+        "..",
+        "uploads",
+        path.basename(post.imageUrl)
+      );
+      if (fs.existsSync(imagePath)) {
+        try {
+          fs.unlinkSync(imagePath);
+        } catch (err) {
+          console.error("Помилка при видаленні файлу зображення:", err.message);
+        }
+      }
+    }
+
+    // Видаляємо пост
+    await PostModel.deleteOne({ _id: postId });
+
     res.status(200).json({
       success: true,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Не вдалося видалити статтю:", error);
     res.status(500).json({
       message: "Не вдалося видалити статтю",
+      error: error.message || "Невідома помилка",
     });
   }
 };
-
 export const updatePost = async (req, res) => {
   try {
     const postId = req.params.id;
