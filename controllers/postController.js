@@ -170,6 +170,7 @@ export const getLastTags = async (req, res) => {
     const tags = posts
       .map((item) => item.tags)
       .flat()
+      .filter((tag, index, self) => self.indexOf(tag) === index)
       .slice(0, 5);
     res.json(tags);
   } catch (error) {
